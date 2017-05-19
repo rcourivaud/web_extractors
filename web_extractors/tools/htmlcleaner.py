@@ -39,4 +39,4 @@ def get_number_from_string(x):
     try:
         return float(re.search("(\d+[\s\,]*\d+[\s\,]*\d*)", x).group(1).replace(" ", "").replace(",", "."))
     except Exception as e:
-        return x
+        return -1
