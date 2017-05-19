@@ -1,8 +1,8 @@
 import html2text
 from bs4 import BeautifulSoup
 
-from webextractors.archi.extractor import Extractor
-from webextractors.tools.htmlcleaner import extract_domain, remove_back_slash
+from web_extractors.archi.extractor import Extractor
+from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash
 
 
 class Crawler(Extractor):

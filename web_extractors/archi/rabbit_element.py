@@ -2,7 +2,7 @@ import json
 
 import pika
 
-from webextractors.tools.logger import Logger
+from web_extractors.tools.logger import Logger
 
 
 # class RabbitElement(Logger):

@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from pandas_mysql import PandasMySQL
 from tqdm import tqdm
 
-from webextractors.archi.publisher import Publisher
+from web_extractors.archi.publisher import Publisher
 
 
 class LCPublisher(Publisher):

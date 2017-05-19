@@ -3,8 +3,8 @@ import abc
 import requests
 from bs4 import BeautifulSoup
 
-from webextractors.tools.proxies_manager import ProxyManager
-from webextractors.tools.user_agent_management import UserAgentManager
+from web_extractors.tools.proxies_manager import ProxyManager
+from web_extractors.tools.user_agent_management import UserAgentManager
 
 
 # class Extractor(Logger):
@@ -45,14 +45,14 @@ class Extractor:
 
     @abc.abstractmethod
     def extract_url(self, url, params):
-        return
+        raise NotImplementedError("Need to implement extract url method")
 
-    def get_soup(self, url):
+    def get_soup(self, url_):
         try:
-            response = self._get_url(url)
+            response = self._get_url(url_)
         except Exception as e:
             print(e)
-            response = self._get_url(url)
+            response = self._get_url(url_)
 
         if not response: return None
         if response.status_code == 200: return BeautifulSoup(response.text, 'lxml')

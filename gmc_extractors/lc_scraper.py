@@ -1,7 +1,7 @@
 import re
 
-from webextractors.archi.extractor import Extractor
-from webextractors.tools.htmlcleaner import clean_html_string
+from web_extractors.archi.extractor import Extractor
+from web_extractors.tools.htmlcleaner import clean_html_string
 
 
 class LCScraper(Extractor):

@@ -2,7 +2,7 @@ import json
 
 import requests_cache
 
-from webextractors.archi.rabbit_element import RabbitElement
+from web_extractors.archi.rabbit_element import RabbitElement
 
 
 class Scraper(RabbitElement):
@@ -58,9 +58,3 @@ class Scraper(RabbitElement):
         self.channel.basic_publish(exchange='',
                                    routing_key=self.reply_to,
                                    body=json.dumps(body))
-
-
-
-if __name__ == '__main__':
-    sc = Scraper("Scraper")
-    sc.launch()

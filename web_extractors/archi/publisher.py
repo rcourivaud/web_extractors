@@ -1,4 +1,4 @@
-from webextractors.archi.rabbit_element import RabbitElement
+from web_extractors.archi.rabbit_element import RabbitElement
 
 
 class Publisher(RabbitElement):
@@ -14,8 +14,3 @@ class Publisher(RabbitElement):
                                    routing_key=self.queue_to_publish,
                                    body=message)
         #self.logger.debug(" [x] Sent : " + message)
-
-
-if __name__ == "__main__":
-    pub = Publisher("TEST")
-    pub.send_request("It's a test !")

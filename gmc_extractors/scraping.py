@@ -1,5 +1,5 @@
 from gmc_extractors.lc_scraper import LCScraper
-from webextractors.scrapers.scrapers import Scraper
+from web_extractors.archi.scrapers import Scraper
 
 if __name__ == "__main__":
     lcs = LCScraper()

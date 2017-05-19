@@ -1,5 +1,6 @@
-from webextractors.archi.rabbit_element import RabbitElement
-
+from errors import NotImplementedMethodError
+from web_extractors.archi.rabbit_element import RabbitElement
+import abc
 
 class Receiver(RabbitElement):
     def __init__(self, name):
@@ -13,8 +14,9 @@ class Receiver(RabbitElement):
                                    no_ack=True)
         print(' Result [*] Waiting for messages. To exit press CTRL+C')
 
+    @abc.abstractmethod
     def callback(self,ch, method, properties, body):
-        print(" Result [x] Received %r" % (body,))
+        raise NotImplementedMethodError("You need to override the callback method")
 
     def launch(self):
         self.channel.start_consuming()
