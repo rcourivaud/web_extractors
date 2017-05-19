@@ -1,8 +1,4 @@
-import json
-
 import pika
-
-from web_extractors.tools.logger import Logger
 
 
 # class RabbitElement(Logger):
@@ -27,10 +23,3 @@ class RabbitElement:
                 credentials=credentials
             ))
         self.channel = self.connection.channel()
-
-        # super().__init__(name=name)
-        # rabbitmq_host = conf['databases']['rabbitmq']['host']
-        # rabbitmq_port = conf['databases']['rabbitmq']['port']
-        # rabbitmq_username = conf['databases']['rabbitmq']['username']
-        # rabbitmq_passwd = conf['databases']['rabbitmq']['passwd']
-

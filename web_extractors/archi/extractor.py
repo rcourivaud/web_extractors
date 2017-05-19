@@ -6,8 +6,6 @@ from bs4 import BeautifulSoup
 from web_extractors.tools.proxies_manager import ProxyManager
 from web_extractors.tools.user_agent_management import UserAgentManager
 
-
-# class Extractor(Logger):
 class Extractor:
     def __init__(self, proxy=None):
         self.ua_manager = UserAgentManager()

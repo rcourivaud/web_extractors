@@ -15,7 +15,6 @@ class Crawler(Extractor):
         return html2text.html2text(page_source)
 
     def crawl_website(self, url):
-        self.logger.debug("Crawl :  {}".format(url))
         page_source = self._get_url(url).text
         if "https:" in url:
             http = "https"
