@@ -23,8 +23,3 @@ class Receiver(RabbitElement):
 
     def launch(self):
         self.channel.start_consuming()
-
-
-if __name__ == "__main__":
-    receiver = Receiver("TEST")
-    receiver.launch()
