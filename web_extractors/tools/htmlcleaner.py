@@ -22,7 +22,7 @@ def clean_html_string(x):
 
 
 def get_price(x):
-    return int(get_number_from_string(x).replace("€", "").replace(" ", ""))
+    return int(get_number_from_string(x.replace("€", "")))
 
 
 def get_date(x):
