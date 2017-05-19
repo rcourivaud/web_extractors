@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='web_extractors',
     version='0.1',
-    packages=['gmc_extractors', 'web_extractors.archi'],
+    packages=['gmc_extractors', 'web_extractors.archi', 'web_extractors.tools'],
     url='',
     license='',
     author='Raphaël Courivaud',
