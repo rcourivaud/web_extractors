@@ -146,10 +146,9 @@ class Crawler(Extractor):
     """
     def extract(self, message):
         website = Website(message["url"])
-        website = c.crawl_website(website)
-        website = c.extract_meta_data(website)
-        website = c.extract_title_description(website)
-
+        website = self.crawl_website(website)
+        website = self.extract_meta_data(website)
+        website = self.extract_title_description(website)
         return website.get_data()
 
 
