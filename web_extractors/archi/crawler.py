@@ -127,7 +127,7 @@ class Crawler(Extractor):
         return website
 
     def extract_title_description(self, website):
-        soup = BeautifulSoup(website.content)
+        soup = BeautifulSoup(website.content, "lxml")
         result = {}
         title = soup.find("title")
         description = soup.find("description")
