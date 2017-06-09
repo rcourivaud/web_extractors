@@ -145,9 +145,12 @@ class Crawler(Extractor):
         return json with crawl result
     """
     def extract(self, message):
-        web = Website(message["url"])
+        website = Website(message["url"])
+        website = c.crawl_website(website)
+        website = c.extract_meta_data(website)
+        website = c.extract_title_description(website)
 
-        return ""
+        return website.get_data()
 
 
 class Website:
@@ -161,7 +164,9 @@ class Website:
 
     def get_data(self):
         return {
-            "data":data
+            "data":self.data,
+            "text":self.text,
+            "links":self.links
         }
 
 
@@ -173,7 +178,5 @@ if __name__ == "__main__":
     website = Website("http://www.adiosparis.fr/")
     # website = Website("http://simonvidal.fr/")
     # website = Website("https://fr.wikipedia.org/wiki/Annuaire")
-    website = c.crawl_website(website)
-    website = c.extract_meta_data(website)
-    website = c.extract_title_description(website)
+
     print(website.data)
