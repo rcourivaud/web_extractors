@@ -1,21 +1,25 @@
 import re
 from urllib.parse import urlparse, urljoin, parse_qs
+
+from html_to_etree import parse_html_bytes
 from lxml import etree
 
-from extract_social_media import find_links_tree
+from web_extractors.tools.social_extract import find_links_tree
 
 
 class ContactExtractor:
     def __init__(self):
-        self.regex_websites = re.compile("(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?")
+        self.regex_websites = re.compile(
+            "(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?")
         self.regex_email = re.compile("[a-z0-9\.\-_]+@[a-z0-9\.\-\_]+\.[a-z]{2,5}")
-        self.regex_phones =  re.compile("0[1-9]{1}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}")
+        self.regex_phones = re.compile(
+            "0[1-9]{1}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}[\.\- ]{0,1}[0-9]{2}")
 
-    def extract(self, full_text, text, domain):
+    def extract(self, text, domain):
         return {
-            #"links": self.get_all_links(text, domain),
-            "mails": list(set(self.get_all_emails(full_text))),
-            "phones":list(set(self.get_all_phones(text)))
+            # "links": self.get_all_links(text, domain),
+            "mails": list(set(self.get_all_emails(text))),
+            "phones": list(set(self.get_all_phones(text)))
         }
 
     def get_all_links(self, x, domain):
@@ -29,8 +33,8 @@ class ContactExtractor:
     def get_all_phones(self, x):
         return [self.clean_phone(elt) for elt in re.findall(self.regex_phones, x)]
 
-    def clean_phone(self,x):
-            return x.replace(".", "").replace("-", "")
+    def clean_phone(self, x):
+        return x.replace(".", "").replace("-", "")
 
 
 class SocialExtractor:
@@ -46,10 +50,20 @@ class SocialExtractor:
                       "viadeo", "googleplus", "instagram",
                       "youtube", "dailymotion", "vimeo"]
 
-    def extract_social_media_links(self,x):
+    def extract_social_media_from_response(self, content, header):
+        tree = parse_html_bytes(content, header.get('content-type'))
+        print("Extract social media")
+        result = {}
+
+        for m in self.metas:
+            for link in list(set(find_links_tree(tree))):
+                if m in link:
+                    result[m] = link
+        return result
+
+
+    def extract_social_media_links(self, x):
         html = etree.HTML(str(x))
-        print(html)
-        print(type(html))
         all_social_links = set(find_links_tree(html))
         result = {}
         for m in self.metas:
@@ -63,7 +77,7 @@ class SocialExtractor:
 
         for m in self.metas:
             res = self._extract_social_link(link=text, meta=m)
-            if res :
+            if res:
                 results[m] = res
 
         return results
@@ -101,7 +115,7 @@ class SocialExtractor:
 
         return None
 
-    def get_facebook_account(self,url):
+    def get_facebook_account(self, url):
         # First lowercase the url
         url = url.lower()
 
@@ -168,13 +182,12 @@ class SocialExtractor:
 
         return None
 
-
     def extract_vimeo(self, src):
         """
         Tries to extract vimeo URL to a video or channel
         """
         # <iframe src="http://player.vimeo.com/video/56553983?title=0&byline=0&portrait=0"></iframe>
-        #http://www.vimeo.com/adiosparis
+        # http://www.vimeo.com/adiosparis
         m = re.search("(https?://player.vimeo.com/.+)", src)
         if m is not None:
             return m.group(1)
