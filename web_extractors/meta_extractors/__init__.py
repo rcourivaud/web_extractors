@@ -54,7 +54,6 @@ class SocialExtractor:
 
     def extract_social_media_from_response(self, content, header):
         tree = parse_html_bytes(content, header.get('content-type'))
-        print("Extract social media")
         result = {}
 
         for m in self.metas:
