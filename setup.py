@@ -12,5 +12,7 @@ setup(
                 'Architecture',
     package_data={'agents': ['UserAgents.txt']},
     include_package_data=True,
-    install_requires=['requests_cache', "requests", "beautifulsoup4", "pika", "ftfy", "lxml", "html2text"],
+    install_requires=['requests_cache', "requests",
+                      "beautifulsoup4", "pika", "ftfy", "lxml",
+                      "html2text", "html_to_etree"]
 )

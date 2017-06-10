@@ -9,7 +9,7 @@ from webextractors.tools.htmlcleaner import clean_html_string
 
 from web_extractors.archi.extractor import Extractor
 from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash
-from web_extractors.meta_extractors import ContactExtractor, SocialExtractor
+from web_extractors.meta_extractors import ContactExtractor, SocialExtractor, HistExtractor
 
 
 class Crawler(Extractor):
@@ -25,19 +25,16 @@ class Crawler(Extractor):
                                "xlsx", "mpg", "mov", "mkv", "mpeg",
                                "m4v", "iso"}
 
-        self.scores = {
-
-        }
-
-
         self.contact_extractor = ContactExtractor()
         self.social_extractor = SocialExtractor()
+        self.histgram_extractor = HistExtractor()
 
     def get_text_from_page(self, url):
         if not self.is_valid_url(url):
             return ""
 
         page_source = self.get_soup(url)
+
         texts = page_source.findAll(text=True)
 
         def visible(element):
@@ -50,10 +47,25 @@ class Crawler(Extractor):
             return True
 
         visible_texts = " ".join(list(filter(visible, texts)))
-        return str(html2text.html2text(visible_texts))#, str(page_source)
+
+        return str(html2text.html2text(re.sub("\<iframe.+\>",
+                                              " ",
+                                              re.sub("\n",
+                                                     " ", visible_texts)))).replace("\n", " ").lower() # , str(page_source)
 
     def is_valid_url(self, url):
         return bool(urllib.parse.urlparse(url).scheme)
+
+    def score_url(self, url):
+        contact_about_l = ["contact", "propos", "about", "nous"]
+        if any([a in b for a in contact_about_l for b in url.values()]):
+            return 1
+        else:
+            return 2
+
+    def get_sorted_links(self, website, soup, http, n=20):
+        all_links = self._get_all_links(str(soup), website.domain, http)
+        return [elt["url"] for elt in list(sorted(all_links, key=lambda x: self.score_url(x)))][0:20]
 
     def crawl_website(self, website):
         response = self._get_url(website.base_url)
@@ -74,7 +86,8 @@ class Crawler(Extractor):
         [s.extract() for s in soup.findAll('script')]
         soup.find("head").extract()
 
-        website.links.update([elt["url"] for elt in self._get_all_links(str(soup), website.domain, http)])
+        website.links.update(self.get_sorted_links(website=website, soup=soup, http=http, ))
+
         for link in tqdm(website.links):
             t = self.get_text_from_page(link)
             website.text += " " + t
@@ -122,8 +135,10 @@ class Crawler(Extractor):
     def extract_meta_data(self, website):
         website.data["meta"] = self.contact_extractor.extract(text=website.text,
                                                               domain=website.domain, )
-        website.data["meta"]["social"] = self.social_extractor.extract_social_media_from_response(content=website.content,
-                                                                                                  header=website.headers)
+        website.data["meta"]["social"] = self.social_extractor.extract_social_media_from_response(
+            content=website.content,
+            header=website.headers)
+        website = self.extract_histogram(website=website)
         return website
 
     def extract_title_description(self, website):
@@ -132,13 +147,16 @@ class Crawler(Extractor):
         title = soup.find("title")
         description = soup.find("description")
         if title: result["title"] = clean_html_string(title.text)
-        if description: result["description"]= clean_html_string(title.text)
+        if description: result["description"] = clean_html_string(title.text)
 
         website.data.update(result)
         return website
 
-
-
+    def extract_histogram(self, website):
+        website.data["histogram"] = self.histgram_extractor.get_histogram_from_string(website.text)
+        website.data["twentywords"] = [k for k,v in sorted(website.data["histogram"].items(),
+                                                           key=lambda x: x[1], reverse=True)][0:20]
+        return website
 
     """
     To implement,
@@ -149,6 +167,7 @@ class Crawler(Extractor):
         website = self.crawl_website(website)
         website = self.extract_meta_data(website)
         website = self.extract_title_description(website)
+
         return website.get_data()
 
 
@@ -160,14 +179,12 @@ class Website:
         self.data = {}
         self.domain = ''
 
-
     def get_data(self):
         return {
-            "data":self.data,
-            "text":self.text,
-            "links":self.links
+            "data": self.data,
+            "text": self.text,
+            "links": self.links
         }
-
 
 
 if __name__ == "__main__":
@@ -177,5 +194,4 @@ if __name__ == "__main__":
     website = Website("http://www.adiosparis.fr/")
     # website = Website("http://simonvidal.fr/")
     # website = Website("https://fr.wikipedia.org/wiki/Annuaire")
-
-    print(website.data)
+    print(c.extract({"url":website.base_url}))
