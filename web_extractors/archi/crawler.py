@@ -62,7 +62,7 @@ class Crawler(Extractor):
         if not self.is_valid_url(url):
             return ""
 
-        page_source = self._get_url(url=url,  retry=2, timeout=8)
+        page_source = self._get_url(url=url,  retry=2, timeout=8).text
         return self.h2t.handle(page_source).replace("\n", " ").replace("\t", " ")
 
     def is_valid_url(self, url):
