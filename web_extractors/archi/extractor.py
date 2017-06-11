@@ -13,7 +13,7 @@ class Extractor:
         if self.have_proxy:
             self.proxies_manager = ProxyManager()
 
-    def _get_url(self, url, retry=3):
+    def _get_url(self, url, retry=3, timeout=8):
         if retry < 1:
             return None
         headers = {
@@ -24,7 +24,7 @@ class Extractor:
             print(proxies)
 
             try:
-                response = requests.get(url, headers=headers, proxies=proxies)
+                response = requests.get(url, headers=headers, proxies=proxies,timeout=timeout)
                 if response.status_code == 200:
                     return response
                 elif response.status_code == 403:
