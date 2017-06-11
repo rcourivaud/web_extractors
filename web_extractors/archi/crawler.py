@@ -25,11 +25,16 @@ class Crawler(Extractor):
                                "xlsx", "mpg", "mov", "mkv", "mpeg",
                                "m4v", "iso"}
 
+        self.h2t = html2text.HTML2Text()
+        self.h2t.ignore_links = True
+        self.h2t.ignore_images =True
+        self.h2t.ignore_emphasis = True
+
         self.contact_extractor = ContactExtractor()
         self.social_extractor = SocialExtractor()
         self.histgram_extractor = HistExtractor()
 
-    def get_text_from_page(self, url):
+    def _get_text_from_page(self, url):
         if not self.is_valid_url(url):
             return ""
 
@@ -52,6 +57,13 @@ class Crawler(Extractor):
                                               " ",
                                               re.sub("\n",
                                                      " ", visible_texts)))).replace("\n", " ").lower() # , str(page_source)
+
+    def get_text_from_page(self, url):
+        if not self.is_valid_url(url):
+            return ""
+
+        page_source = self._get_url(url=url,  retry=2, timeout=8)
+        return self.h2t.handle(page_source).replace("\n", " ").replace("\t", " ")
 
     def is_valid_url(self, url):
         return bool(urllib.parse.urlparse(url).scheme)
