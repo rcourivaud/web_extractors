@@ -328,7 +328,7 @@ class HistExtractor:
 
     def get_histogram_from_string(self, x):
         hist = self.cv.fit_transform([x])
-        dict_result =  {k:v for k,v in zip(self.cv.get_feature_names(), hist.toarray()[0]) if k not in self.bad_words}
+        dict_result =  {k:int(v) for k,v in zip(self.cv.get_feature_names(), hist.toarray()[0]) if k not in self.bad_words}
         return dict_result
 
 
