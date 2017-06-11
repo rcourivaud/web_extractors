@@ -183,7 +183,7 @@ class Website:
         return {
             "data": self.data,
             "text": self.text,
-            "links": self.links
+            "links": list(self.links)
         }
 
 
