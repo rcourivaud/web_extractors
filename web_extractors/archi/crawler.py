@@ -165,6 +165,7 @@ class Crawler(Extractor):
         return website
 
     def extract_histogram(self, website):
+        print(website.text)
         website.data["histogram"] = self.histgram_extractor.get_histogram_from_string(website.text)
         website.data["twentywords"] = [k for k,v in sorted(website.data["histogram"].items(),
                                                            key=lambda x: x[1], reverse=True)][0:20]
@@ -203,7 +204,7 @@ if __name__ == "__main__":
     c = Crawler()
     # website = Website("https://bondevisite.fr/")
     # website = Website("https://bondevisite.fr/")
-    website = Website("http://www.adiosparis.fr/")
+    website = Website("http://blogdunepatate.com/")
     # website = Website("http://simonvidal.fr/")
     # website = Website("https://fr.wikipedia.org/wiki/Annuaire")
     print(c.extract({"url":website.base_url}))
