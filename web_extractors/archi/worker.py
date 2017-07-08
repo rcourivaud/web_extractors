@@ -5,7 +5,7 @@ import requests_cache
 from web_extractors.archi.rabbit_element import RabbitElement
 
 
-class Scraper(RabbitElement):
+class Worker(RabbitElement):
     def __init__(self, host, port, user, pwd, name="SCRAPING", all_scrapers=None, cache=None):
         if all_scrapers:
             self.all_scrappers = all_scrapers
