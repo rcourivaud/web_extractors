@@ -3,7 +3,7 @@ import urllib
 import html2text
 from bs4 import BeautifulSoup
 import re
-
+from ftfy import fix_text
 from tqdm import tqdm
 from webextractors.tools.htmlcleaner import clean_html_string
 
@@ -102,7 +102,7 @@ class Crawler(Extractor):
 
         for link in tqdm(website.links):
             t = self.get_text_from_page(link)
-            website.text += " " + t
+            website.text += " " + fix_text(t, normalization="NFKC")
         return website
 
     def score_links(self, links):
