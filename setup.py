@@ -1,5 +1,10 @@
 from distutils.core import setup
 
+from pip.req import parse_requirements
+
+install_reqs = parse_requirements("requirements.txt")
+reqs = [str(ir.req) for ir in install_reqs]
+
 setup(
     name='web_extractors',
     version='0.1',
@@ -13,7 +18,5 @@ setup(
                 'Architecture',
     package_data={'agents': ['UserAgents.txt']},
     include_package_data=True,
-    install_requires=['requests_cache', "requests",
-                      "beautifulsoup4", "pika", "ftfy", "lxml",
-                      "html2text", "html_to_etree"]
+    install_requires=reqs
 )

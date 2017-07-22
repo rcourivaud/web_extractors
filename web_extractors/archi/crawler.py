@@ -5,11 +5,10 @@ import html2text
 from bs4 import BeautifulSoup
 from ftfy import fix_text
 from tqdm import tqdm
-from webextractors.tools.htmlcleaner import clean_html_string
 
 from web_extractors.archi.extractor import Extractor
 from web_extractors.meta_extractors import ContactExtractor, SocialExtractor, HistExtractor
-from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash
+from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash, clean_html_string
 
 
 class Crawler(Extractor):
