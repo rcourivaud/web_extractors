@@ -1,11 +1,12 @@
 import re
-from urllib.parse import urlparse, urljoin, parse_qs
+from urllib.parse import urlparse, parse_qs
 
+import nltk
 from html_to_etree import parse_html_bytes
 from lxml import etree
-from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.snowball import FrenchStemmer
-import nltk
+from sklearn.feature_extraction.text import CountVectorizer
+
 from web_extractors.tools.social_extract import find_links_tree
 
 
@@ -37,7 +38,6 @@ class ContactExtractor:
 
     def clean_phone(self, x):
         return x.replace(".", "").replace("-", "")
-
 
 class SocialExtractor:
     """

@@ -48,6 +48,7 @@ class Worker(RabbitElement):
     def callback_on_receive(self, ch, method, properties, body):
         print("Receive Message")
         result = self.extract(body)
+        print(result)
         ch.basic_ack(delivery_tag=method.delivery_tag)
         self.reply_to_queue(result)
 

@@ -1,15 +1,15 @@
+import re
 import urllib
 
 import html2text
 from bs4 import BeautifulSoup
-import re
 from ftfy import fix_text
 from tqdm import tqdm
 from webextractors.tools.htmlcleaner import clean_html_string
 
 from web_extractors.archi.extractor import Extractor
-from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash
 from web_extractors.meta_extractors import ContactExtractor, SocialExtractor, HistExtractor
+from web_extractors.tools.htmlcleaner import extract_domain, remove_back_slash
 
 
 class Crawler(Extractor):
@@ -27,7 +27,7 @@ class Crawler(Extractor):
 
         self.h2t = html2text.HTML2Text()
         self.h2t.ignore_links = True
-        self.h2t.ignore_images =True
+        self.h2t.ignore_images = True
         self.h2t.ignore_emphasis = True
 
         self.contact_extractor = ContactExtractor()
@@ -58,11 +58,8 @@ class Crawler(Extractor):
                                               re.sub("\n",
                                                      " ", visible_texts)))).replace("\n", " ").lower() # , str(page_source)
 
-    def get_text_from_page(self, url):
-        if not self.is_valid_url(url):
-            return ""
+    def get_text_from_page(self, page_source):
 
-        page_source = self._get_url(url=url,  retry=2, timeout=8).text
         return self.h2t.handle(page_source).replace("\n", " ").replace("\t", " ")
 
     def is_valid_url(self, url):
@@ -75,35 +72,43 @@ class Crawler(Extractor):
         else:
             return 2
 
-    def get_sorted_links(self, website, soup, http, n=20):
-        all_links = self._get_all_links(str(soup), website.domain, http)
+    def get_sorted_links(self, website, soup, n=20):
+        all_links = self._get_all_links(str(soup), website.domain, website.http)
         return [elt["url"] for elt in list(sorted(all_links, key=lambda x: self.score_url(x)))][0:20]
 
     def crawl_website(self, website):
-        response = self._get_url(website.base_url)
+        response = self._get_url(website.base_url, timeout=8)
         page_source = response.text
-        if "https:" in website.base_url:
-            http = "https"
-        else:
-            http = "http"
 
         website.content = response.content
         website.headers = response.headers
 
+        website.text += " " + fix_text(self.get_text_from_page(page_source), normalization="NFKC")
+
         # Extract Domain
-        website.domain = extract_domain(website.base_url)[0]
 
         # remove scripts and head text
         soup = BeautifulSoup(page_source, "lxml")
         [s.extract() for s in soup.findAll('script')]
         soup.find("head").extract()
+        fixed_links = list(website.links)
 
-        website.links.update(self.get_sorted_links(website=website, soup=soup, http=http, ))
-
-        for link in tqdm(website.links):
-            t = self.get_text_from_page(link)
-            website.text += " " + fix_text(t, normalization="NFKC")
+        for link in tqdm(fixed_links):
+            if link not in website.crawled_links:
+                website.crawled_links.append(link)
+                if self.is_valid_url(link):
+                    page_source = self._get_url(url=link, retry=2, timeout=8).text
+                    soup = BeautifulSoup(page_source, "lxml")
+                    t = self.get_text_from_page(page_source)
+                    website.links.update(self.get_sorted_links(website=website, soup=soup))
+                    website.out_links.update(self.get_outlinks(website=website, soup=soup))
+                    website.text += " " + fix_text(t, normalization="NFKC")
         return website
+
+    def get_outlinks(self, website, soup):
+        all_links = [urllib.parse.urlparse(elt.get("href")).netloc for elt in soup.findAll("a") if
+                     elt.get("href") and website.domain not in elt.get("href")]
+        return [elt for elt in all_links if elt]
 
     def score_links(self, links):
         pass
@@ -112,6 +117,7 @@ class Crawler(Extractor):
         soup = BeautifulSoup(page, 'lxml')
         all_links = [self.create_item(elt, domain_url, http) for elt in soup.findAll("a")]
         return [url for url in all_links if self._is_valid_url(url, domain_url=domain_url)]
+
 
     def _is_valid_url(self, url, domain_url):
         if not url["title"] or url["title"] == "" or not url['url']:
@@ -131,7 +137,9 @@ class Crawler(Extractor):
         if not element_web.get("href"):
             url = None
         else:
-            if "http" in element_web["href"]:
+            if element_web["href"].startswith("#"):
+                url = None
+            elif "http" in element_web["href"]:
                 url = element_web["href"]
             elif "//" in element_web["href"]:
                 url = http + element_web["href"]
@@ -139,6 +147,8 @@ class Crawler(Extractor):
                 url = http + "://" + base_domain + "/" + element_web["href"]
             elif '/' not in element_web["href"]:
                 url = http + "://" + base_domain + "/" + element_web["href"]
+                if ".html" in element_web["href"] or ".php" in element_web["href"]:
+                    title = element_web["href"].replace(".html", "").replace(".php", "")
             else:
                 url = http + "://" + base_domain + element_web["href"]
 
@@ -165,7 +175,6 @@ class Crawler(Extractor):
         return website
 
     def extract_histogram(self, website):
-        print(website.text)
         website.data["histogram"] = self.histgram_extractor.get_histogram_from_string(website.text)
         website.data["twentywords"] = [k for k,v in sorted(website.data["histogram"].items(),
                                                            key=lambda x: x[1], reverse=True)][0:20]
@@ -177,7 +186,9 @@ class Crawler(Extractor):
     """
     def extract(self, message):
         website = Website(message["url"])
-        website = self.crawl_website(website)
+        depth = message.get("depth", 2)
+        for i in range(depth):
+            website = self.crawl_website(website)
         website = self.extract_meta_data(website)
         website = self.extract_title_description(website)
 
@@ -187,24 +198,33 @@ class Crawler(Extractor):
 class Website:
     def __init__(self, url):
         self.base_url = url
-        self.links = set()
+        self.links = set([url])
         self.text = ''
         self.data = {}
-        self.domain = ''
+        self.domain = extract_domain(self.base_url)[0]
+        self.http = "https" if "https" in url else "http"
+
+        self.out_links = set()
+        self.crawled_links = []
 
     def get_data(self):
-        return {
-            "data": self.data,
-            "text": self.text,
-            "links": list(self.links)
-        }
+        self.data.update({
+            "text": fix_text(self.text, normalization="NFKC"),
+            "links": list(self.links),
+            "outlinks": list(self.out_links),
+            "links": list(self.crawled_links),
+            "_id": self.domain,
+            "http": self.http
+        })
+
+        return self.data
 
 
 if __name__ == "__main__":
     c = Crawler()
     # website = Website("https://bondevisite.fr/")
     # website = Website("https://bondevisite.fr/")
-    website = Website("http://blogdunepatate.com/")
+    website = Website("http://raphaelcourivaud.fr")
     # website = Website("http://simonvidal.fr/")
     # website = Website("https://fr.wikipedia.org/wiki/Annuaire")
     print(c.extract({"url":website.base_url}))
