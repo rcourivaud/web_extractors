@@ -8,4 +8,4 @@ requests_cache==0.4.13
 tqdm==4.11.0
 html2text==2016.9.19
 beautifulsoup4==4.6.0
-scikit_learn==0.19
+scikit_learn==0.18
