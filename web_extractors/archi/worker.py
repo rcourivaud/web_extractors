@@ -29,8 +29,6 @@ class Worker(RabbitElement):
         params = body.get("params")
         url = body.get("url")
         which = body.get("which")
-        print(body)
-
         # Choose the right scraper to call
         return self.all_scrappers[which].extract_url(url=url, params=params)
 
