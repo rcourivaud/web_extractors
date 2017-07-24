@@ -14,7 +14,8 @@ def remove_double_blank(x):
 
 def extract_domain(url):
     parsed_uri = urlparse(url)
-    return parsed_uri.netloc, parsed_uri.hostname
+    return parsed_uri.netloc.replace("www.", ""), parsed_uri.hostname
+
 
 
 def clean_html_string(x):
