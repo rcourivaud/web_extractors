@@ -196,7 +196,7 @@ class Crawler(Extractor):
 
             return website.get_data()
         except:
-            return {}
+            return None
 
 
 class Website:
