@@ -76,7 +76,7 @@ class Crawler(Extractor):
         return [elt["url"] for elt in list(sorted(all_links, key=lambda x: self.score_url(x)))][0:20]
 
     def crawl_website(self, website):
-        response = self._get_url(website.base_url, timeout=8)
+        response = self._get_url(website.base_url, timeout=15)
         page_source = response.text
 
         website.content = response.content
@@ -188,12 +188,15 @@ class Crawler(Extractor):
     def extract(self, message):
         website = Website(message["url"])
         depth = message.get("depth", 2)
-        for i in range(depth):
-            website = self.crawl_website(website)
-        website = self.extract_meta_data(website)
-        website = self.extract_title_description(website)
+        try:
+            for i in range(depth):
+                website = self.crawl_website(website)
+            website = self.extract_meta_data(website)
+            website = self.extract_title_description(website)
 
-        return website.get_data()
+            return website.get_data()
+        except:
+            return {}
 
 
 class Website:
