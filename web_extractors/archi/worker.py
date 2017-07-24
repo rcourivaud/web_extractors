@@ -6,7 +6,7 @@ from web_extractors.archi.rabbit_element import RabbitElement
 
 
 class Worker(RabbitElement):
-    def __init__(self, host, port, user, pwd, name="SCRAPING", all_scrapers=None, cache=None):
+    def __init__(self, host, port, user, pwd, name="SCRAPING", all_scrapers=None, cache=None, reply=False):
         if all_scrapers:
             self.all_scrappers = all_scrapers
             super().__init__(host=host, port=port, user=user, pwd=pwd)
@@ -16,6 +16,7 @@ class Worker(RabbitElement):
 
             self.initialize_listener()
             self.initialize_replier()
+            self.reply = reply
 
             if cache:
                 requests_cache.install_cache(cache_name=cache)
@@ -50,7 +51,8 @@ class Worker(RabbitElement):
         result = self.extract(body)
         print(result)
         ch.basic_ack(delivery_tag=method.delivery_tag)
-        self.reply_to_queue(result)
+        if self.reply:
+            self.reply_to_queue(result)
 
     def initialize_replier(self):
         self.channel.queue_declare(queue=self.reply_to, durable=True)
