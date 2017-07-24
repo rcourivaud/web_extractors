@@ -186,9 +186,9 @@ class Crawler(Extractor):
         return json with crawl result
     """
     def extract(self, message):
-        website = Website(message["url"])
-        depth = message.get("depth", 2)
         try:
+            website = Website(message["url"])
+            depth = message.get("depth", 2)
             for i in range(depth):
                 website = self.crawl_website(website)
             website = self.extract_meta_data(website)
