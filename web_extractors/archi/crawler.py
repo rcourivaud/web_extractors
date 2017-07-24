@@ -96,12 +96,14 @@ class Crawler(Extractor):
             if link not in website.crawled_links:
                 website.crawled_links.append(link)
                 if self.is_valid_url(link):
-                    page_source = self._get_url(url=link, retry=2, timeout=8).text
-                    soup = BeautifulSoup(page_source, "lxml")
-                    t = self.get_text_from_page(page_source)
-                    website.links.update(self.get_sorted_links(website=website, soup=soup))
-                    website.out_links.update(self.get_outlinks(website=website, soup=soup))
-                    website.text += " " + fix_text(t, normalization="NFKC")
+                    try:
+                        page_source = self._get_url(url=link, retry=2, timeout=8).text
+                        soup = BeautifulSoup(page_source, "lxml")
+                        t = self.get_text_from_page(page_source)
+                        website.links.update(self.get_sorted_links(website=website, soup=soup))
+                        website.out_links.update(self.get_outlinks(website=website, soup=soup))
+                        website.text += " " + fix_text(t, normalization="NFKC")
+                    except:pass
         return website
 
     def get_outlinks(self, website, soup):
