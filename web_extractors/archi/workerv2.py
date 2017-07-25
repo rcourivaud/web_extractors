@@ -34,7 +34,12 @@ class Worker(RabbitElement):
         url = body.get("url")
         which = body.get("which")
         # Choose the right scraper to call
-        return self.all_scrappers[which].extract_url(url=url, params=params)
+        try:
+            return self.all_scrappers[which].extract_url(url=url, params=params)
+        except Exception as e:
+            with open('myfile', 'a') as f:
+                f.write(json.dumps({"error": str(e),
+                                    "message": message}) + '\n')
 
     def initialize_listener(self):
         self.channel.queue_declare(queue=self.queue_listener, durable=True)

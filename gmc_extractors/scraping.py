@@ -1,5 +1,5 @@
 from gmc_extractors.lc_scraper import LCScraper
-from web_extractors.archi.worker import Worker
+from web_extractors.archi.old_worker import Worker
 
 if __name__ == "__main__":
     lcs = LCScraper()
